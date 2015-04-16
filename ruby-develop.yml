@@ -51,7 +51,7 @@
       # - ncurses
       # - ncurses-devel
       # - ruby-devel #for centos7
-      # - bzip2 #for centos7 
+      - bzip2 #for centos7 
 
   - name: vim clone
     hg: repo=https://vim.googlecode.com/hg dest=vim 
