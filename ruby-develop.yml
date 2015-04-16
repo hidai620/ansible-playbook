@@ -1,0 +1,99 @@
+- hosts: server
+  sudo: yes
+  vars:
+    files: files
+  tasks:
+
+  - name: be sure java is installed
+    yum: name={{item}} state=installed
+    with_items:
+      - java-1.8.0-openjdk.x86_64
+      - java-1.8.0-openjdk-devel.x86_64
+  
+  - name: be sure {{item}} is installed
+    yum: name={{item}} state=installed
+    with_items:
+      - gcc
+      - zlib-devel
+      - openssl-devel
+      - libffi-devel 
+
+  - name: git clone rbenv
+    git: clone=yes repo=https://github.com/sstephenson/rbenv.git dest=~/.rbenv 
+
+  - name: rbenv add configuration to .bash_profile 
+    lineinfile: dest=~/.bash_profile regexp="rbenv init" insertafter=EOF line='export PATH="$HOME/.rbenv/bin:$PATH"' create=yes
+
+  - name: rbenv add configuratiron to .bash_profile
+    lineinfile: dest=~/.bash_profile regexp="rbenv init" insertafter=EOF line='eval "$(rbenv init -)"' create=yes
+
+  - name: git clone rubybuild 
+    git: clone=yes repo=https://github.com/sstephenson/ruby-build.git dest=~/.rbenv/plugins/ruby-build 
+
+  - name: Load rbenv setting
+    shell: source ~/.bash_profile executable=/bin/bash
+
+  - name: rbenv install
+    shell: ~/.rbenv/bin/rbenv install 2.2.1 creates=~/.rbenv/versions/2.2.1
+
+  - name: rbenv global
+    shell: ~/.rbenv/bin/rbenv global  2.2.1
+
+
+
+
+  - name: be sure vim is installed
+    yum: name={{item}} state=installed
+    with_items:
+      - lua-devel 
+      - ncurses-devel
+      - mercurial
+      # - ncurses
+      # - ncurses-devel
+      # - ruby-devel #for centos7
+      # - bzip2 #for centos7 
+
+  - name: vim clone
+    hg: repo=https://vim.googlecode.com/hg dest=vim 
+
+  - name: vim install
+    shell: cd ~/vim && hg pull && hg update creates=~/vim/src/vim
+
+  #ruby versionを明示的に指定
+  - name: vim install
+    shell: cd ~/vim && make distclean && ./configure --prefix=/usr/local --with-features=huge --enable-multibyte --enable-rubyinterp --enable-luainterp --enable-cscope --enable-fail-if-missing --with-ruby-command=/root/.rbenv/shims/ruby && make && make install creates=~/vim/src/vim
+
+  - name: rsense install
+    shell: wget http://cx4a.org/pub/rsense/rsense-0.3.tar.bz2 && bzip2 -dc rsense-0.3.tar.bz2 | tar xvf - && cp -r rsense-0.3 /usr/local/lib && chmod +x /usr/local/lib/rsense-0.3/bin/rsense creates=~/rsense-0.3.tar.bz2
+  - name: copy Gemfile
+    copy: src={{files}}/Gemfile dest=/root/Gemfile
+
+  - name: bundler install
+    shell: /root/.rbenv/shims/gem install bundler creates=~/.rbenv/shims/bundle
+
+  - name: rubocop install
+    shell: /root/.rbenv/shims/bundle install
+
+  - name: bitclust setup
+    shell: /root/.rbenv/shims/bitclust setup
+
+  - name: be sure ctags is installed
+    yum: name={{item}} state=installed
+    with_items:
+      - ctags
+
+  - name: neobundle install
+    shell: curl https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh | sh creates=~/.vim/bundle/neobundle.vim
+
+  - name: create vim dir 
+    file: path=~/.vim/indent state=directory
+
+  - name: copy vimrc
+    copy: src={{files}}/vimrc dest=~/.vimrc
+
+  - name: copy ruby.vim
+    copy: src={{files}}/ruby.vim dest=~/.vim/indent/
+
+  # - name: neobundle install
+  #   shell: vim +\:NeoBundleInstall\ 
+
