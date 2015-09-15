@@ -1,0 +1,58 @@
+- hosts: server
+  sudo: yes
+  vars:
+    files: files
+  tasks:
+
+  # - name: be sure java is installed
+  #   yum: name={{item}} state=installed
+  #   with_items:
+  #     - java-1.8.0-openjdk.x86_64
+  #     - java-1.8.0-openjdk-devel.x86_64
+  #
+  # - name: be sure {{item}} is installed
+  #   yum: name={{item}} state=installed
+  #   with_items:
+  #     - gcc
+  #     - zlib-devel
+  #     - openssl-devel
+  #     - libffi-devel 
+
+
+
+  - name: 
+    yum: name={{item}} state=installed
+    with_items:
+      - haproxy
+      - mackerel-agent
+      - mackerel-agent-plugins
+  
+  - name: add sample htmlfile 
+    file: path=~/.vim/indent state=directory
+
+  - name: rubocop install
+    shell: /root/.rbenv/shims/bundle install
+
+  - name: bitclust setup
+    shell: /root/.rbenv/shims/bitclust setup
+
+  - name: be sure ctags is installed
+    yum: name={{item}} state=installed
+    with_items:
+      - ctags
+
+  - name: neobundle install
+    shell: curl https://raw.githubusercontent.com/Shougo/neobundle.vim/master/bin/install.sh | sh creates=~/.vim/bundle/neobundle.vim
+
+  - name: create vim dir 
+    file: path=~/.vim/indent state=directory
+
+  - name: copy vimrc
+    copy: src={{files}}/vimrc dest=~/.vimrc
+
+  - name: copy ruby.vim
+    copy: src={{files}}/ruby.vim dest=~/.vim/indent/
+
+  # - name: neobundle install
+  #   shell: vim +\:NeoBundleInstall\ 
+
